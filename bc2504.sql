@@ -9,9 +9,12 @@ create table Person (
     age integer,
     salary NUMERIC(10, 2)
 );
-
+-- insert data in harddisk
 insert into Person (name, age, salary) values ('John', 13, 25000.5);
 insert into Person (name, age, salary) values ('Peter', 18, 35000);
+
+-- Delete Original Records: Clear the original table
+DELETE FROM Person;
 
 -- * means all columns
 select * from person;
@@ -27,6 +30,7 @@ select * from person;
 delete from person where salary > 30000;
 
 select * from person;
+
 drop table cat;
 -- create Cat table
 create table cat (
@@ -41,6 +45,7 @@ insert into cat (id, name, age) values (3, 'Sally', 20); -- OK
 insert into cat values 
 	(4, 'Lucas', 2), 
     (5, 'Steven', 8);
+    
 -- update 2 cat by condition
 update cat set name = concat('super', name) where age > 9;
 select * from cat;

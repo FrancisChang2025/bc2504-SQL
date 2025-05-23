@@ -163,11 +163,121 @@ CREATE TABLE customer_order_requests (
 
 INSERT INTO customer_order_requests VALUES (1, '2024-10-31 14:30:35', 23, 90);
 
-INSERT INTO customer_order_requests VALUES (2, STR_TO_DATE('2025-1-31 14:30:35',  23, 90,'%Y-%m-%d %H: %i:%s'), 20,150);
+INSERT INTO customer_order_requests VALUES (2, STR_TO_DATE('2025-1-31 14:30:35',  23, 90,'%Y-%m-%d %H: %i:%s'), 20, 150);
 
 INSERT INTO customer_order_requests VALUES (3, NOW(), 10, 400);
 
 SELECT * FROM customer_order_requests;
+
+CREATE TABLE customers (
+	id BIGINT,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    dob DATE,
+    gender VARCHAR(1)
+);
+
+INSERT INTO customers VALUES (1, 'Lucas', 'Chan', STR_TO_DATE('2008-01-31', '14:30:35', '%Y-%m-%d'), 'M');
+INSERT INTO customers VALUES (2, 'Peter', 'Lau', STR_TO_DATE('2005-02-20', '14:30:35', '%Y-%m-%d'), 'M');
+INSERT INTO customers VALUES (3, 'Sally', 'Lau', STR_TO_DATE('1998-12-20', '14:30:35', '%Y-%m-%d'), 'F');
+
+SELECT * FROM customers;
+-- find the customer, whose last_name = lau and dob > 2000-01-01
+SELECT * FROM customers where last_name = 'Lau' and dob > STR_TO_DATE('2000-01-01 14:30:35', '%Y-%m-%d');
+
+SELECT date_add(c.dob, INTERVAL 3 MONTH), c.* FROM customers c;
+SELECT date_sub(c.dob, INTERVAL 3 MONTH), c.* FROM customers c;
+SELECT datediff(now(), c.dob), c.* FROM customers c;
+
+-- Aggregation Functions
+-- count, max, min, avg, sum
+SELECT count(*) FROM customers where dob > STR_TO_DATE('2000-01-01 14:30:35', '%Y-%m-%d');
+SELECT max(dob) FROM customers;
+SELECT min(dob) FROM customers;
+
+-- AVG() and SUM() -> summary of rows, but we cannot show all ages of cats in a single row.
+-- SELECT AVG(age), SUM(age), age FROM cat; -- error
+
+SELECT SUM(age), max(id) FROM cat;
+SELECT * FROM cat;
+
+-- GROUP BY
+DROP TABLE books;
+
+CREATE TABLE books (
+	title VARCHAR(50),
+    genre VARCHAR(50),
+    price DECIMAL(4, 2)
+);
+
+DELETE FROM books;  -- 清空書架 (內容)
+INSERT INTO books VALUE('book 1', 'adventure', 11.9);
+INSERT INTO books VALUE('book 2', 'fantasy', 8.49);
+INSERT INTO books VALUE('book 3', 'romance', 9.99);
+INSERT INTO books VALUE('book 4', 'adventure', 9.99);
+INSERT INTO books VALUE('book 5', 'fantasy', 7.99);
+INSERT INTO books VALUE('book 6', 'romance', 5.88);
+
+-- 1. group by genre
+-- 2. average price per group
+-- 3. those group with average price > 10 -> result
+
+SELECT * FROM books;
+-- where -> filter record
+-- having -> filter group
+
+SELECT b.genre, count(*), AVG(b.price) -- step 3
+FROM books b
+WHERE b.genre <> 'adventure' -- step 1
+GROUP BY b.genre HAVING max(b.price) > 9; -- step 2
+
+
+-- Table relationships (One to Many)
+CREATE TABLE orders (
+	id BIGINT,
+    order_date DATE,
+    amount DECIMAL(6, 2),
+    customer_id BIGINT
+);
+INSERT INTO orders VALUES (1, '2025-05-01', 999.9, 2);
+INSERT INTO orders VALUES (2, '2025-05-09', 1500, 3);
+INSERT INTO orders VALUES (3, '2025-05-18', 80, 2);
+
+SELECT * FROM orders;
+SELECT * FROM customers
+-- Find customer who did not order anything.
+-- exists
+SELECT *
+FROM customers c
+WHERE NOT EXISTS (SELECT * FROM orders o WHERE o.customer_id = c.id);
+
+-- Find customer who order something between 2025-05-09 and 2025-05-15
+SELECT *
+FROM customers c
+WHERE EXISTS (SELECT * FROM orders o WHERE o.customer_id = c.id and o.order_date BETWEEN '2025-05-09' and '2025-05-15');
+
+-- for (Customer c : customers) {
+-- 	for (Order o : orders {
+-- 		if (o.getCustomerId == c.id) {
+-- 			break;
+--        }
+--	  }
+-- }
+
+-- JOIN tables (Customers + orders)
+-- inner join
+SELECT c.*, o.amount
+FROM customers c INNER JOIN orders o on c.id = o.customer_id  -- step 1
+WHERE o.order_date BETWEEN '2025-05-09' and '2025-05-15' -- step 2
+
+-- left join (Two tables)
+SELECT c.*, o.*
+FROM customers c LEFT JOIN orders o on c.id = o.customer_id;
+
+SELECT c.*, o.*
+FROM orders o LEFT JOIN customers c on c.id = o.customer_id;
+
+
 
 
 

@@ -163,7 +163,7 @@ CREATE TABLE customer_order_requests (
 
 INSERT INTO customer_order_requests VALUES (1, '2024-10-31 14:30:35', 23, 90);
 
-INSERT INTO customer_order_requests VALUES (2, STR_TO-DATE('2025-1-31 14:30:35',  23, 90,'%Y-%m-%d %H: %i:%s'), 20,150);
+INSERT INTO customer_order_requests VALUES (2, STR_TO_DATE('2025-1-31 14:30:35',  23, 90,'%Y-%m-%d %H: %i:%s'), 20,150);
 
 INSERT INTO customer_order_requests VALUES (3, NOW(), 10, 400);
 

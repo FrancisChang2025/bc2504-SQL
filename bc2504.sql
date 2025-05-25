@@ -31,7 +31,7 @@ delete from person where salary > 30000;
 
 select * from person;
 
-drop table cat;
+-- drop table cat;
 -- create Cat table
 create table cat (
 	id bigint,
@@ -45,6 +45,8 @@ insert into cat (id, name, age) values (3, 'Sally', 20); -- OK
 insert into cat values 
 	(4, 'Lucas', 2), 
     (5, 'Steven', 8);
+
+select * from cat;
     
 -- update 2 cat by condition
 update cat set name = concat('super', name) where age > 9;
@@ -56,11 +58,13 @@ select * from cat;
 
 -- drop table
 -- drop table cat;
+DELETE FROM cat;
 
 -- WHERE 條件 -> filter rows
 -- AND OR
 select * from cat where name = 'lucas' or age > 10;
 select * from cat where name = 'lucas' or (age > 10 and name = 'Steven');
+SELECT * FROM cat WHERE age >= 10 AND instr(name, 'Peter');
 -- Database does not have index cocept, instead, we have position
 select instr(name, 'Peter'), name from cat where age >= 10 and instr(name, 'Peter') > 0;
 
@@ -80,7 +84,9 @@ select * from cat;
 update cat set email = 'lucas@gmail.com' where name = 'lucas';
 update cat set email = 'peter@yahoo.com.hk' where name = 'peter';
 update cat set email = 'steven@gmail.com' where name = 'steven';
+update cat set email = 'john@gmail.com' where name = 'John';
 select * from cat;
+DELETE FROM cat;
 
 -- modify column
 alter table cat modify email varchar(70);
@@ -94,7 +100,7 @@ from cat
 where name = 'lucas' or name = 'steven'
 order by age desc;
 
-insert into cat values (5, 'vincent', 10, 'vincent@gmail.com');
+insert into cat values (6, 'vincent', 10, 'vincent@gmail.com');
 
 select c.* -- last step
 from cat c
@@ -118,11 +124,12 @@ insert into Person (name, age, salary) values ('John', 13, 25000.5);
 -- case insensitive
 select c.* from cat c where c.name = 'lucas';
 
--- DBMS (Database Manageent System)
+-- DBMS (Database Managment System)
 -- Java Object = row (not a cell)
 -- an attribute of an object = a column of a row (field)
 -- List<Object> = table
 
+DELETE FROM circles;
 -- Math 
 CREATE TABLE circles (
 	id BIGINT,
@@ -168,11 +175,16 @@ CREATE TABLE customer_order_requests (
 
 INSERT INTO customer_order_requests VALUES (1, '2024-10-31 14:30:35', 23, 90);
 
-INSERT INTO customer_order_requests VALUES (2, STR_TO_DATE('2025-1-31 14:30:35',  23, 90,'%Y-%m-%d %H: %i:%s'), 20, 150);
+INSERT INTO customer_order_requests VALUES (2, STR_TO_DATE('2025-1-31 14:30:35', '%Y-%m-%d %H: %i:%s'), 20, 150);
 
 INSERT INTO customer_order_requests VALUES (3, NOW(), 10, 400);
 
 SELECT * FROM customer_order_requests;
+
+DELETE FROM customer_order_requests;
+
+DELETE FROM customers;
+DROP TABLE customers;
 
 CREATE TABLE customers (
 	id BIGINT,
@@ -183,7 +195,7 @@ CREATE TABLE customers (
 );
 
 INSERT INTO customers VALUES (1, 'Lucas', 'Chan', STR_TO_DATE('2008-01-31', '14:30:35', '%Y-%m-%d'), 'M');
-INSERT INTO customers VALUES (2, 'Peter', 'Lau', STR_TO_DATE('2005-02-20', '14:30:35', '%Y-%m-%d'), 'M');
+INSERT INTO customers VALUES (2, 'Peter', 'Lau', STR_TO_DATE('2005-02-20', '16:30:35', '%Y-%m-%d'), 'M');
 INSERT INTO customers VALUES (3, 'Sally', 'Lau', STR_TO_DATE('1998-12-20', '14:30:35', '%Y-%m-%d'), 'F');
 
 SELECT * FROM customers;
@@ -266,7 +278,7 @@ WHERE EXISTS (SELECT * FROM orders o WHERE o.customer_id = c.id and o.order_date
 -- 		if (o.getCustomerId == c.id) {
 -- 			break;
 --        }
---	  }
+--  	}
 -- }
 
 -- JOIN tables (Customers + orders)

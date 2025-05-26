@@ -327,7 +327,7 @@ FROM orders o RIGHT JOIN customers c ON c.id = o.customer_id;
 
 -- hard delete
 DELETE FROM orders;
-
+DROP TABLE orders;
 DELETE FROM orders WHERE id = 2;
 
 -- soft delete (table design)
@@ -394,14 +394,13 @@ INSERT INTO subjects VALUES (21, 'Maths');
 INSERT INTO subjects VALUES (22, 'History');
 INSERT INTO subjects VALUES (23, 'English');
 
--- Data Integrity
+-- Data Integrity 數據完整性
 INSERT INTO subject_enrollments VALUES (1, 11, 22);
 INSERT INTO subject_enrollments VALUES (2, 11, 23);
 INSERT INTO subject_enrollments VALUES (3, 13, 21);
 
--- Voliate data Integrity
-
-
+-- Voliate data integrity
+-- insert into subject_enrollments values (4, 13, 100);
 
 SELECT * FROM subject_enrollments;
 
@@ -435,18 +434,18 @@ WHERE NOT EXISTS (SELECT 1 FROM subject_enrollments se WHERE se.subject_id = sb.
 -- 5. Find all students, and his enrollemnt subject if any. No matter the student as enrolled subject.
 -- show student name, and enrolled subject name if any.  (LEFT JOIN)
 
--- Suggested answer
+-- Suggested answer ❤️‍🔥
 SELECT st.name AS student_name, sb.name AS subject_name
 FROM subject_enrollments se
     INNER JOIN subjects sb ON sb.id = se.subject_id
 	RIGHT JOIN students st ON st.id = se.student_id;
     
 -- subquery
-SELECT st.name AS student_name, temp_result.subject_name
-FROM
-(SELECT sb.id, st.name AS student_name, se.student_id, se.subject_id
-FROM students sb INNER JOIN subject_enrollments se ON sb.id = se.student_id) temp_result
-	RIGHT JOIN subjects st ON st.id = temp_result.subject_id;
+select st.name as student_name, temp_result.subject_name
+from
+(select sb.id, sb.name as subject_name, se.student_id, se.subject_id
+from subjects sb inner join subject_enrollments se on sb.id = se.student_id) temp_result 
+	right join students st on st.id = temp_result.student_id;
 
 SELECT * FROM orders;
 

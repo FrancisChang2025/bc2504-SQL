@@ -254,6 +254,14 @@ FROM books b
 WHERE b.genre <> 'adventure' -- step 1
 GROUP BY b.genre HAVING max(b.price) > 9; -- step 2
 
+-- subquery (query inside another query)
+SELECT b.title
+FROM books b
+WHERE b.price = (SELECT max(c.price) FROM books c);
+
+-- ERROR
+SELECT max(price), title
+FROM books;
 
 -- Table relationships (One to Many)
 CREATE TABLE orders (
@@ -298,8 +306,10 @@ WHERE EXISTS (SELECT * FROM orders o WHERE o.customer_id = c.id AND o.order_date
 -- select c.*, o.amount
 
 SELECT c.gender, c.first_name, o.id, o.amount
-FROM customers c INNER JOIN orders o ON c.id = o.customer_id  -- step 1
+FROM customers c INNER JOIN orders o ON c.id = o.customer_id -- step 1
 WHERE o.order_date BETWEEN '2025-05-09' AND '2025-05-15'; -- step 2
+
+SELECT * FROM orders;
 
 -- left join (Two tables)
 SELECT c.*, o.*
@@ -318,7 +328,9 @@ FROM orders o RIGHT JOIN customers c ON c.id = o.customer_id;
 -- hard delete
 DELETE FROM orders;
 
--- soft delete
+DELETE FROM orders WHERE id = 2;
+
+-- soft delete (table design)
 SELECT * FROM orders;
 ALTER TABLE orders ADD delete_ind VARCHAR(1);
 ALTER TABLE orders ADD delete_detetime DATETIME;
@@ -328,39 +340,70 @@ SELECT o.id, o.order_date, o.amount, o.customer_id FROM orders o WHERE o.delete_
 
 
 -- Many to Many
+
+-- Drop table: You need to drop the child table (with PK) first
+DROP TABLE subject_enrollments;
+DROP TABLE students;
+DROP TABLE subjects;
+
+
 CREATE TABLE students (
-	id BIGINT,
-    name VARCHAR(20)
+	id BIGINT PRIMARY KEY,
+    email VARCHAR(20) UNIQUE,
+    name VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE subjects (
-	id BIGINT,
-    name VARCHAR(20)
+	id BIGINT PRIMARY KEY,
+    name VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE subject_enrollments (
-		id BIGINT,
-		student_id BIGINT,
-		subject_id BIGINT
+		id BIGINT PRIMARY KEY,
+		student_id BIGINT NOT NULL,
+		subject_id BIGINT NOT NULL,
+        FOREIGN KEY (student_id) REFERENCES students(id),
+        FOREIGN KEY (subject_id) REFERENCES subjects(id)
 );
 
-DELETE FROM students;
-DELETE FROM subjects;
-DELETE FROM subject_enrollments;
+-- (A) Primary Key (PK)
+-- 1. Every table has 1 PK only
+-- 2. Usually we use number (BIGINT) for PK
+-- 3. Unique + Not Null + 
 
-INSERT INTO students VALUES (1, 'Lucas');
-INSERT INTO students VALUES (2, 'Leo');
-INSERT INTO students VALUES (3, 'Vincent');
+-- (B) Foreign Key
+-- 1. Usually Reference a column that in other table as primary key
+-- 2. Can be more than 1 FK in a table
+-- 3. Won't check the null value
 
-INSERT INTO subjects VALUES (1, 'Maths');
-INSERT INTO subjects VALUES (2, 'History');
-INSERT INTO subjects VALUES (3, 'English');
+-- Primary Key and Foreign Key are the measures to safeguard data. (Data Integrity)
+	-- In this example, the student id in subject_enrollmets "MUST" exists students table
+    -- In this example, the subject id in subject_enrollmets "MUST" exists subjects table
+    
+-- (C) Unique
+-- 1. Can be more than 1 Unique column in a table
 
-INSERT INTO subject_enrollments VALUES (1, 2, 2);
-INSERT INTO subject_enrollments VALUES (2, 2, 3);
-INSERT INTO subject_enrollments VALUES (3, 3, 1);
+-- (D) NOT NULL
+-- 1. Can be more than 1 "not null" column in a table
 
-SELECT * FROM students;
+INSERT INTO students VALUES (1, 'lucas@gmail.com', 'Lucas');
+INSERT INTO students VALUES (11,'vincent@gmail.com','Leo');
+INSERT INTO students VALUES (13,'vincent123@gmail.com', 'Vincent');
+
+INSERT INTO subjects VALUES (21, 'Maths');
+INSERT INTO subjects VALUES (22, 'History');
+INSERT INTO subjects VALUES (23, 'English');
+
+-- Data Integrity
+INSERT INTO subject_enrollments VALUES (1, 11, 22);
+INSERT INTO subject_enrollments VALUES (2, 11, 23);
+INSERT INTO subject_enrollments VALUES (3, 13, 21);
+
+-- Voliate data Integrity
+
+
+
+SELECT * FROM subject_enrollments;
 
 -- 1. Find any students who did not enroll any subject
 -- show student id and student name
@@ -371,8 +414,10 @@ WHERE NOT EXISTS (SELECT 1 FROM subject_enrollments se WHERE se.student_id = s.i
 
 -- 2. Find enrolled subjects and its student name
 -- show the student name and subject name only. (Join 3 tables)
-SELECT stu.name, s.name
-FROM 
+SELECT st.name AS student_name, sb.name AS subject_name
+FROM subject_enrollments se
+    INNER JOIN students st ON st.id = se.student_id
+    INNER JOIN subjects sb ON sb.id = se.subject_id;
 
 
 -- 3. Find all students, who enrolled History and Maths
@@ -390,18 +435,74 @@ WHERE NOT EXISTS (SELECT 1 FROM subject_enrollments se WHERE se.subject_id = sb.
 -- 5. Find all students, and his enrollemnt subject if any. No matter the student as enrolled subject.
 -- show student name, and enrolled subject name if any.  (LEFT JOIN)
 
-SELECT temp_result.student_name, sb.name
-FROM
-(SELECT st.id, st.name AS student_name, se.student_id, se.subject_id
-FROM students st LEFT JOIN subject_enrollments se ON st.id = se.student_id) temp_result
-	INNER JOIN subjects sb ON sb.id = temp_result.subject_id;
-
+-- Suggested answer
 SELECT st.name AS student_name, sb.name AS subject_name
 FROM subject_enrollments se
-	RIGHT JOIN students st ON st.id = se.student_id
-    INNER JOIN subjects sb ON sb.id = se.subject_id;
+    INNER JOIN subjects sb ON sb.id = se.subject_id
+	RIGHT JOIN students st ON st.id = se.student_id;
+    
+-- subquery
+SELECT st.name AS student_name, temp_result.subject_name
+FROM
+(SELECT sb.id, st.name AS student_name, se.student_id, se.subject_id
+FROM students sb INNER JOIN subject_enrollments se ON sb.id = se.student_id) temp_result
+	RIGHT JOIN subjects st ON st.id = temp_result.subject_id;
 
+SELECT * FROM orders;
 
+-- DROP Table first, then BACK-UP
+DROP TABLE students_backup
+CREATE TABLE students_ackup AS SELECT * FROM Students;
+-- CREATE table students_backup LIKE students;
+SELECT * FROM students_backup;
+
+-- CASE
+SELECT CASE
+	 WHEN c.gender = 'M' THEN 'Male'
+	 WHEN c.gender = 'F' THEN 'Female'
+    END AS gender_description, c.*
+FROM customers c;
+
+-- LIKE
+SELECT c.*
+FROM customers c
+WHERE c.first_name LIKE 'P%';
+
+-- IFNULL
+SELECT c.id, c.name, c.age, IFNULL(c.emial, 'N/A') AS email
+FROM cat c;
+
+-- 
+SELECT 3 + 4 AS 'hello' FROM cat;
+SELECT 3 + 7 from dual;  -- 1 row result
+
+-- sub-query
+SELECT c.name, c.age, (select max(d.age) from cat d) as max_age
+from cat c;
+
+-- Union
+-- 1. same number of columns for both tables
+-- 2. 
+SELECT id, name, 'Cat' As Type
+FROM cat
+UNION
+SELECT id, name, 'Student' As Type
+FROM students;
+
+-- Union all
+-- 1. Sum all rows whether if they are duplicated
+-- 2. same number of columns for both tables
+SELECT name
+FROM cat
+UNION
+SELECT name
+FROM students;
+
+SELECT name
+FROM cat
+UNION ALL
+SELECT name
+FROM students;
 
 -- One to One
 

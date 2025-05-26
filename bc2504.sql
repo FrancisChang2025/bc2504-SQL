@@ -294,9 +294,12 @@ WHERE EXISTS (SELECT * FROM orders o WHERE o.customer_id = c.id AND o.order_date
 
 -- JOIN tables (Customers + orders)
 -- inner join
-SELECT c.*, o.amount
+
+-- select c.*, o.amount
+
+SELECT c.gender, c.first_name, o.id, o.amount
 FROM customers c INNER JOIN orders o ON c.id = o.customer_id  -- step 1
-WHERE o.order_date BETWEEN '2025-05-09' AND '2025-05-15' -- step 2
+WHERE o.order_date BETWEEN '2025-05-09' AND '2025-05-15'; -- step 2
 
 -- left join (Two tables)
 SELECT c.*, o.*
@@ -304,6 +307,104 @@ FROM customers c LEFT JOIN orders o ON c.id = o.customer_id;
 
 SELECT c.*, o.*
 FROM orders o LEFT JOIN customers c ON c.id = o.customer_id;
+
+-- right join (Un-usually use)
+SELECT c.*, o.*
+FROM customers c RIGHT JOIN orders o ON c.id = o.customer_id;
+
+SELECT c.*, o.*
+FROM orders o RIGHT JOIN customers c ON c.id = o.customer_id;
+
+-- hard delete
+DELETE FROM orders;
+
+-- soft delete
+SELECT * FROM orders;
+ALTER TABLE orders ADD delete_ind VARCHAR(1);
+ALTER TABLE orders ADD delete_detetime DATETIME;
+UPDATE orders SET delete_ind = 'Y', delete_datetime = now() WHERE id = 2;
+
+SELECT o.id, o.order_date, o.amount, o.customer_id FROM orders o WHERE o.delete_ind IS NULL;
+
+
+-- Many to Many
+CREATE TABLE students (
+	id BIGINT,
+    name VARCHAR(20)
+);
+
+CREATE TABLE subjects (
+	id BIGINT,
+    name VARCHAR(20)
+);
+
+CREATE TABLE subject_enrollments (
+		id BIGINT,
+		student_id BIGINT,
+		subject_id BIGINT
+);
+
+DELETE FROM students;
+DELETE FROM subjects;
+DELETE FROM subject_enrollments;
+
+INSERT INTO students VALUES (1, 'Lucas');
+INSERT INTO students VALUES (2, 'Leo');
+INSERT INTO students VALUES (3, 'Vincent');
+
+INSERT INTO subjects VALUES (1, 'Maths');
+INSERT INTO subjects VALUES (2, 'History');
+INSERT INTO subjects VALUES (3, 'English');
+
+INSERT INTO subject_enrollments VALUES (1, 2, 2);
+INSERT INTO subject_enrollments VALUES (2, 2, 3);
+INSERT INTO subject_enrollments VALUES (3, 3, 1);
+
+SELECT * FROM students;
+
+-- 1. Find any students who did not enroll any subject
+-- show student id and student name
+-- not exists
+SELECT s.id, s.name
+FROM students s
+WHERE NOT EXISTS (SELECT 1 FROM subject_enrollments se WHERE se.student_id = s.id);
+
+-- 2. Find enrolled subjects and its student name
+-- show the student name and subject name only. (Join 3 tables)
+SELECT stu.name, s.name
+FROM 
+
+
+-- 3. Find all students, who enrolled History and Maths
+-- show the student id and name (Join 2 tables, without subject table)
+SELECT st.id, st.name
+FROM students st INNER JOIN subject_enrollments se ON st.id = se.student_id
+WHERE se.subject_id IN (1, 2);
+
+-- 4. Find subjects, which did not enrolled by any student,
+-- show the subject id and name
+SELECT sb.id, sb.name
+FROM subjects sb
+WHERE NOT EXISTS (SELECT 1 FROM subject_enrollments se WHERE se.subject_id = sb.id);
+
+-- 5. Find all students, and his enrollemnt subject if any. No matter the student as enrolled subject.
+-- show student name, and enrolled subject name if any.  (LEFT JOIN)
+
+SELECT temp_result.student_name, sb.name
+FROM
+(SELECT st.id, st.name AS student_name, se.student_id, se.subject_id
+FROM students st LEFT JOIN subject_enrollments se ON st.id = se.student_id) temp_result
+	INNER JOIN subjects sb ON sb.id = temp_result.subject_id;
+
+SELECT st.name AS student_name, sb.name AS subject_name
+FROM subject_enrollments se
+	RIGHT JOIN students st ON st.id = se.student_id
+    INNER JOIN subjects sb ON sb.id = se.subject_id;
+
+
+
+-- One to One
+
 
 
 

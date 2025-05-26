@@ -175,7 +175,7 @@ CREATE TABLE customer_order_requests (
 
 INSERT INTO customer_order_requests VALUES (1, '2024-10-31 14:30:35', 23, 90);
 
-INSERT INTO customer_order_requests VALUES (2, STR_TO_DATE('2025-1-31 14:30:35', '%Y-%m-%d %H: %i:%s'), 20, 150);
+INSERT INTO customer_order_requests VALUES (2, STR_TO_DATE('2025-1-31 14:30:35', '%Y-%m-%d %H:%i:%s'), 20, 150);
 
 INSERT INTO customer_order_requests VALUES (3, NOW(), 10, 400);
 
@@ -194,9 +194,9 @@ CREATE TABLE customers (
     gender VARCHAR(1)
 );
 
-INSERT INTO customers VALUES (1, 'Lucas', 'Chan', STR_TO_DATE('2008-01-31', '14:30:35', '%Y-%m-%d'), 'M');
-INSERT INTO customers VALUES (2, 'Peter', 'Lau', STR_TO_DATE('2005-02-20', '16:30:35', '%Y-%m-%d'), 'M');
-INSERT INTO customers VALUES (3, 'Sally', 'Lau', STR_TO_DATE('1998-12-20', '14:30:35', '%Y-%m-%d'), 'F');
+INSERT INTO customers VALUES (1, 'Lucas', 'Chan', STR_TO_DATE('2008-01-31 14:30:35', '%Y-%m-%d %H:%i:%s'), 'M');
+INSERT INTO customers VALUES (2, 'Peter', 'Lau', STR_TO_DATE('2005-02-20 16:30:35', '%Y-%m-%d %H:%i:%s'), 'M');
+INSERT INTO customers VALUES (3, 'Sally', 'Lau', STR_TO_DATE('1998-12-20 14:30:35', '%Y-%m-%d %H:%i:%s'), 'F');
 
 SELECT * FROM customers;
 -- find the customer, whose last_name = lau and dob > 2000-01-01
@@ -205,6 +205,7 @@ SELECT * FROM customers where last_name = 'Lau' and dob > STR_TO_DATE('2000-01-0
 SELECT date_add(c.dob, INTERVAL 3 MONTH), c.* FROM customers c;
 SELECT date_sub(c.dob, INTERVAL 3 MONTH), c.* FROM customers c;
 SELECT datediff(now(), c.dob), c.* FROM customers c;
+SELECT datediff(c.dob, '2000-1-1'), c.* FROM customers c;
 
 -- Aggregation Functions
 -- count, max, min, avg, sum
@@ -212,10 +213,11 @@ SELECT count(*) FROM customers where dob > STR_TO_DATE('2000-01-01 14:30:35', '%
 SELECT max(dob) FROM customers;
 SELECT min(dob) FROM customers;
 
--- AVG() and SUM() -> summary of rows, but we cannot show all ages of cats in a single row.
--- SELECT AVG(age), SUM(age), age FROM cat; -- error
 
+-- AVG() and SUM() -> summary of rows, but we cannot show all ages of cats in a single row.
+-- SELECT AVG(age), SUM(age), age FROM cat; -- ALL error (Not common sense)
 SELECT SUM(age), max(id) FROM cat;
+SELECT AVG(age) FROM cat;
 SELECT * FROM cat;
 
 -- GROUP BY
@@ -243,7 +245,11 @@ SELECT * FROM books;
 -- where -> filter record
 -- having -> filter group
 
-SELECT b.genre, count(*), AVG(b.price) -- step 3
+SELECT b.genre, count(*), AVG(b.price)
+FROM books b
+GROUP BY b.genre;
+
+SELECT b.genre, count(*), max(b.price) -- step 3
 FROM books b
 WHERE b.genre <> 'adventure' -- step 1
 GROUP BY b.genre HAVING max(b.price) > 9; -- step 2
@@ -266,12 +272,17 @@ SELECT * FROM customers
 -- exists
 SELECT *
 FROM customers c
+WHERE EXISTS (SELECT * FROM orders o WHERE o.customer_id = c.id);
+
+-- not exists
+SELECT *
+FROM customers c
 WHERE NOT EXISTS (SELECT * FROM orders o WHERE o.customer_id = c.id);
 
 -- Find customer who order something between 2025-05-09 and 2025-05-15
 SELECT *
 FROM customers c
-WHERE EXISTS (SELECT * FROM orders o WHERE o.customer_id = c.id and o.order_date BETWEEN '2025-05-09' and '2025-05-15');
+WHERE EXISTS (SELECT * FROM orders o WHERE o.customer_id = c.id AND o.order_date BETWEEN '2025-05-09' and '2025-05-15');
 
 -- for (Customer c : customers) {
 -- 	for (Order o : orders {
@@ -284,15 +295,15 @@ WHERE EXISTS (SELECT * FROM orders o WHERE o.customer_id = c.id and o.order_date
 -- JOIN tables (Customers + orders)
 -- inner join
 SELECT c.*, o.amount
-FROM customers c INNER JOIN orders o on c.id = o.customer_id  -- step 1
-WHERE o.order_date BETWEEN '2025-05-09' and '2025-05-15' -- step 2
+FROM customers c INNER JOIN orders o ON c.id = o.customer_id  -- step 1
+WHERE o.order_date BETWEEN '2025-05-09' AND '2025-05-15' -- step 2
 
 -- left join (Two tables)
 SELECT c.*, o.*
-FROM customers c LEFT JOIN orders o on c.id = o.customer_id;
+FROM customers c LEFT JOIN orders o ON c.id = o.customer_id;
 
 SELECT c.*, o.*
-FROM orders o LEFT JOIN customers c on c.id = o.customer_id;
+FROM orders o LEFT JOIN customers c ON c.id = o.customer_id;
 
 
 

@@ -386,13 +386,13 @@ CREATE TABLE subject_enrollments (
 -- (D) NOT NULL
 -- 1. Can be more than 1 "not null" column in a table
 
-INSERT INTO students VALUES (1, 'lucas@gmail.com', 'Lucas');
-INSERT INTO students VALUES (11,'vincent@gmail.com','Leo');
-INSERT INTO students VALUES (13,'vincent123@gmail.com', 'Vincent');
+insert into students values (1, 'lucas@gmail.com', 'Lucas');
+insert into students values (11, 'vincent@gmail.com', 'Leo');
+insert into students values (13, 'vincent123@gmail.com', 'Vincent');
 
-INSERT INTO subjects VALUES (21, 'Maths');
-INSERT INTO subjects VALUES (22, 'History');
-INSERT INTO subjects VALUES (23, 'English');
+insert into subjects values (21, 'Maths');
+insert into subjects values (22, 'History');
+insert into subjects values (23, 'English');
 
 -- Data Integrity 數據完整性
 INSERT INTO subject_enrollments VALUES (1, 11, 22);
@@ -451,7 +451,7 @@ SELECT * FROM orders;
 
 -- DROP Table first, then BACK-UP
 DROP TABLE students_backup
-CREATE TABLE students_ackup AS SELECT * FROM Students;
+CREATE TABLE students_backup AS SELECT * FROM Students;
 -- CREATE table students_backup LIKE students;
 SELECT * FROM students_backup;
 
@@ -468,7 +468,8 @@ FROM customers c
 WHERE c.first_name LIKE 'P%';
 
 -- IFNULL
-SELECT c.id, c.name, c.age, IFNULL(c.emial, 'N/A') AS email
+-- SELECT c.id, c.name, c.age, IFNULL(c.emial, 'N/A') AS email
+SELECT c.id, c.name, ifnull(c.age, 'N/A'), ifnull(c.email, 'N/A') AS email
 FROM cat c;
 
 -- 
@@ -476,12 +477,12 @@ SELECT 3 + 4 AS 'hello' FROM cat;
 SELECT 3 + 7 from dual;  -- 1 row result
 
 -- sub-query
-SELECT c.name, c.age, (select max(d.age) from cat d) as max_age
+SELECT c.name, c.age, (SELECT max(d.age) FROM cat d) AS max_age
 from cat c;
 
 -- Union
 -- 1. same number of columns for both tables
--- 2. 
+-- 2. Natually remove duplicated
 SELECT id, name, 'Cat' As Type
 FROM cat
 UNION

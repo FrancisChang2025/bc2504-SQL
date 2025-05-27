@@ -390,6 +390,9 @@ insert into students values (1, 'lucas@gmail.com', 'Lucas');
 insert into students values (11, 'vincent@gmail.com', 'Leo');
 insert into students values (13, 'vincent123@gmail.com', 'Vincent');
 
+SELECT s.id, s.name, s.email
+FROM students s;
+
 insert into subjects values (21, 'Maths');
 insert into subjects values (22, 'History');
 insert into subjects values (23, 'English');
@@ -450,9 +453,9 @@ from subjects sb inner join subject_enrollments se on sb.id = se.student_id) tem
 SELECT * FROM orders;
 
 -- DROP Table first, then BACK-UP
-DROP TABLE students_backup
-CREATE TABLE students_backup AS SELECT * FROM Students;
 -- CREATE table students_backup LIKE students;
+DROP TABLE students_backup
+CREATE TABLE students_backup AS SELECT * FROM Students
 SELECT * FROM students_backup;
 
 -- CASE

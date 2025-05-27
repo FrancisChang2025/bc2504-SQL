@@ -452,7 +452,7 @@ from subjects sb inner join subject_enrollments se on sb.id = se.student_id) tem
 
 SELECT * FROM orders;
 
--- DROP Table first, then BACK-UP
+-- If have a record, DROP Table first, then BACK-UP
 -- CREATE table students_backup LIKE students;
 DROP TABLE students_backup
 CREATE TABLE students_backup AS SELECT * FROM Students
@@ -471,7 +471,7 @@ FROM customers c
 WHERE c.first_name LIKE 'P%';
 
 -- IFNULL
--- SELECT c.id, c.name, c.age, IFNULL(c.emial, 'N/A') AS email
+-- SELECT c.id, c.name, c.age, IFNULL(c.email, 'N/A') AS email
 SELECT c.id, c.name, ifnull(c.age, 'N/A'), ifnull(c.email, 'N/A') AS email
 FROM cat c;
 

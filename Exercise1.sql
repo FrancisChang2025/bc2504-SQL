@@ -2,11 +2,42 @@ CREATE DATABASE bootcamp_Exercise1;
 
 USE bootcamp_Exercise1;
 
+-- PK PK
+-- PK FK
+
+DROP TABLE job_history;
+DROP TABLE employees;
+DROP TABLE jobs;
+DROP TABLE departments;
+DROP TABLE locations;
+DROP TABLE countries;
 DROP TABLE regions;
+
+DELETE FROM job_history;
+DELETE FROM employees;
+DELETE FROM jobs;
+DELETE FROM departments;
+DELETE FROM locations;
+DELETE FROM countries;
+DELETE FROM regions;
+
+-- AUTO_INCREMENT -> FIND MAX ID in table, + 1
+
+DELETE FROM regions;
 CREATE TABLE regions (
-	region_id BIGINT PRIMARY KEY,
-    region_name VARCHAR(25) NOT NULL
+	regions_id INT AUTO_INCREMENT,
+    regions_name VARCHAR(25) NOT NULL,
+    CONSTRAINT pk_regions PRIMARY KEY (region_id)
 );
+
+-- READ / WRITE
+INSERT INTO regions (region_name) VALUES ('JAPAN'); -- 1
+INSERT INTO regions (region_name) VALUES ('CHINA'); -- 2
+SELECT * FROM regions;
+DELETE FROM regions;
+DELETE FROM regions WHERE region_id = 1;  -- delete japan
+INSERT INTO regions (region_name) VALUES ('US');  -- 3
+
 
 INSERT INTO regions VALUES (1, 'North America'); -- United State
 INSERT INTO regions VALUES (2, 'South America');  -- Italy
@@ -14,8 +45,6 @@ INSERT INTO regions VALUES (3, 'Europe'); -- Germany
 INSERT INTO regions VALUES (4, 'Asia');  -- Japan
 
 SELECT * FROM regions;
-
-DROP TABLE countries;
 
 CREATE TABLE countries (
 	country_id CHAR(2) PRIMARY KEY,
@@ -40,6 +69,7 @@ CREATE TABLE locations (
     country_id CHAR(2),
     FOREIGN KEY (country_id) REFERENCES countries(country_id)
 );
+
 DELETE FROM locations;
 INSERT INTO locations VALUES (1000, '1297 Via Cola di Rie', '989', 'Roma', '', 'IT');
 INSERT INTO locations VALUES (1100, '93091 Calle della Te', '10934', 'Venice', '', 'IT');
@@ -62,6 +92,7 @@ INSERT INTO departments VALUES (30, 'Purchasing', 202, 1200);
 
 SELECT * FROM departments;
 
+-- One job for many employee
 CREATE TABLE jobs (
 	job_id VARCHAR(10) PRIMARY KEY,
     job_title VARCHAR(35) NOT NULL,
@@ -75,7 +106,6 @@ INSERT INTO jobs VALUES ('ST_CLERK', 'Junior', 17800, 25000);
 
 SELECT * FROM jobs;
 
-DROP TABLE employees;
 DELETE FROM employees;
 CREATE TABLE employees (
 	employee_id BIGINT PRIMARY KEY,
@@ -116,37 +146,42 @@ INSERT INTO job_history (start_date, end_date, employee_id, job_id, department_i
 ('2023-02-20', '2023-06-20', 102, 'HR-REP', 20),
 ('2023-03-25', NULL, 103, 'IT_PROG', 30);
 
--- 3
-SELECT location_id, street_address, city, state_province, country_name,'locations' As Type
-FROM locations
-LEFT JOIN countries ON locations.country_id = countries.country_id;
+SELECT * FROM job_history;
 
--- 4
+-- 3 Write a query to find the location_id, street_address, city, state-province, country_name of locations.
+SELECT location_id, street_address, city, state_province, country_name, 'locations'
+FROM locations
+LEFT JOIN countries ON countries.country_id = locations.country_id;
+
+-- 4 Write a query to find the first_name, last name, department ID of all the employees.
 SELECT e.first_name, e.last_name, e.department_id
 FROM employees e;
 
--- 5 Write a query to find the first_name, last_name, job_id and department ID 
-	-- of the employees who works in Japan
-SELECT e.first_name, e.last_name, e.job_id, e.department_id
+
+/* 5 Write a query to find the first_name, last_name, job_id and department ID 
+	 of the employees who works in Japan. */
+SELECT e.first_name, e.last_name, e.job_id, e.department_id, c.country_id
 FROM employees e
-WHERE c.country_id = 'JP'
-	INNER JOIN departments d ON e.department_id = d.department_id
-	INNER JOIN locations l ON e.department_id = l.location_id
-	INNER JOIN countries c ON l.country_id = c.country_id;
+INNER JOIN departments d ON d.department_id = e.department_id
+INNER JOIN locations l ON l.location_id = d.location_id
+INNER JOIN countries c ON c.country_id = l.country_id
+WHERE c.country_id = 'JP';
 
 -- 6 Write a query to find the employee_id, last_name along with their manager_id and last_name.
-SELECT e.employee_id, e.last_name, e.manager_id
+SELECT e.employee_id, e.last_name, e.manager_id, e.manager_last_name
 FROM employees e
-INNER JOIN employees e ON e.manager_id = employee_id; 
+INNER JOIN employees e ON e.manager_id = e.employee_id; 
 
--- 7 Write a query to find the first_name, last_name and hire date of the employees 
-	-- who was hired after employee 'Lex De Hann'.
+/*7 Write a query to find the first_name, last_name and hire date of the employees 
+	who was hired after employee 'Lex De Hann'.*/
 SELECT e.first_name, e.last_name, e.hire_date
 FROM employees e
 WHERE e.first_name = 'Lex';
 
 -- 8 Write a query to get the department name and number of employees of each the department.
-SELECT d.department_name, COUNT(e.employee_id) AS employee_count
+SELECT 
+	d.department_name AS department, 
+    COUNT(e.employee_id) AS number_of_employee
 FROM departments d
 LEFT JOIN employees e ON d.department_id = e.department_id
 GROUP BY d.department_name;
@@ -162,11 +197,49 @@ INNER JOIN jobs j ON e.job_id = j.job_id
 WHERE e.department_id = 30;
     
 -- 10 Write a query to display all department name, manager name, city and country name.
-SELECT 
+SELECT
+	d.department_name,
+    e.ifnull(manager_id, 'N/A') AS manager_name,
+    l.city,
+    c.country_name
+FROM departments d
+INNER JOIN employees e ON d.department_id = e.department_id
+INNER JOIN locations l ON l.location_id = d.location_id
+INNER JOIN countries c ON c.country_id = l.country_id;
+
+-- Approach 1:
+SELECT m.last_name, m.first_name, d.department_name; l.city, c.country_name
+FROM employees e
+	INNER JOIN employees m ON e.manger_id = m.employee_id
+    INNER JOIN departments d ON d.department_id = e.department_id
+	INNER JOIN locations l ON l.location_id = d.location_id
+	INNER JOIN countries c ON c.country_id = l.country_id
+WHERE e.manager_id is null;
+
+-- Approach 2: CTE (sub-query) 👉 view (Book W7 Ch.9)
+
+WITH managers AS (
+	SELECT DISTINCT e.employee_id, m.last_name, m.first_name
+    FROM
+);
+SELECT * 
+FROM managers mg
+	INNER JOIN
+    INNER JOIN
+    INNER JOIN
+
 
 -- 11 Write a query to display the average salary of each department.
-SELECT d.department_name,AVG(e.salary) AS average_salary
+SELECT 
+	d.department_name AS department,
+    AVG(e.salary) AS average_salary
 FROM departments d
 JOIN employees e ON d.department_id = e.department_id
 GROUP BY d.department_name;
+
+/* 12 Now, we try to perform normalization on table 'jobs'.
+a. How do you re-design the table 'jobs'? adn adding table 'job_grades'?  */
+
+
+
     
